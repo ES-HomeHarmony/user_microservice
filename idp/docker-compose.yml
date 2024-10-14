@@ -1,0 +1,13 @@
+services:
+  idp:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: idp
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+    # stdin_open: true
+    # tty: true
+
