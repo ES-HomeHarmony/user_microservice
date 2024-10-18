@@ -53,7 +53,7 @@ jobs:
         env:
           DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3307/test_user_db  # Update this based on how your code configures DB connections
         run: |
-          pytest -cov-report=xml  # Runs tests and generates coverage report in XML
+          pytest --cov=User_MicroService/app --cov-report=xml  # Runs tests and generates coverage report in XML
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
