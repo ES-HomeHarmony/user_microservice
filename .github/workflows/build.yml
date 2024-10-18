@@ -49,19 +49,9 @@ jobs:
       - name: Move to the correct directory
         run: cd ./User_MicroService/app
 
-      - name: Print Environment Variables
-        run: |
-          echo "DB_USER: $DB_USER"
-          echo "DB_PASSWORD: $DB_PASSWORD"
-          echo "DB_HOST: $DB_HOST"
-          echo "DB_NAME: $DB_NAME"
-          echo "DB_PORT: $DB_PORT"
-        env:
-          ENV: development
-
       - name: Run Tests
         env:
-        #   DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3307/test_user_db  # Update this based on how your code configures DB connections
+            DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3307/test_user_db  # Update this based on how your code configures DB connections
             ENV: development
         run: |
           pytest --cov=./ --cov-report=xml  # Runs tests and generates coverage report in XML
