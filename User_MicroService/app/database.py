@@ -5,17 +5,11 @@ from dotenv import load_dotenv
 
 # Determine which environment file to load
 env = os.getenv('ENV', 'development')
-print(f'Loading environment: {env}')
 env_file = f'../.env/{env}.env'
-print(f'Loading environment file: {env_file}')
 
 # Load environment variables from file
 if os.path.exists(env_file):
-    print(f'Loading environment: {env}')
-    print(f'Loading environment file: {env_file}')
     load_dotenv(env_file)
-else:
-    print(f"Environment file {env_file} not found. Using system environment variables.")
 
 # Retrieve credentials from environment variables
 db_user = os.getenv('DB_USER')
