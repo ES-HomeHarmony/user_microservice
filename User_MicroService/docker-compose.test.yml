@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  mysql_test:
+    image: mysql:8.0
+    container_name: test_mysqlDB
+    environment:
+      MYSQL_ROOT_PASSWORD: test_password
+      MYSQL_DATABASE: test_user_db
+      MYSQL_USER: test_user
+      MYSQL_PASSWORD: test_password
+    ports:
+      - "3307:3306"  # Different port for testing DB
+    volumes:
+      - test_db_data:/var/lib/mysql
+    networks:
+      - test_network
+
+volumes:
+  test_db_data:
+
+networks:
+  test_network:
+    driver: bridge
