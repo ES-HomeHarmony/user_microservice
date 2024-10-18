@@ -49,8 +49,15 @@ jobs:
       - name: Move to the correct directory
         run: cd ./User_MicroService/app
 
-      - name: Set Environment Variable
-        run: echo "ENV=development" >> $GITHUB_ENV
+      - name: Print Environment Variables
+        run: |
+          echo "DB_USER: $DB_USER"
+          echo "DB_PASSWORD: $DB_PASSWORD"
+          echo "DB_HOST: $DB_HOST"
+          echo "DB_NAME: $DB_NAME"
+          echo "DB_PORT: $DB_PORT"
+        env:
+          ENV: development
 
       - name: Run Tests
         env:
