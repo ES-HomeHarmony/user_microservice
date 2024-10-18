@@ -32,11 +32,6 @@ jobs:
         with:
           python-version: '3.x'  # Use your project's Python version
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
       - name: Wait for MySQL to be Ready
         run: |
           echo "Waiting for MySQL to be ready..."
@@ -46,8 +41,16 @@ jobs:
             sleep 5
           done
 
-      - name: Move to the app directory
-        run: cd User_MicroService/app
+      - name: Move to the correct directory
+        run: cd User_MicroService
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Move to the correct directory
+        run: cd app
 
       - name: Run Tests
         env:
