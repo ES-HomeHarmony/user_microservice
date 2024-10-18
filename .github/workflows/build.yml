@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   sonarcloud:
-    name: SonarCloud
+    name: Test and SonarCloud Scan
     runs-on: ubuntu-latest
     services:
       mysql_test:
@@ -42,7 +42,7 @@ jobs:
           done
 
       - name: Move to the correct directory
-        run: cd User_MicroService
+        run: ls
 
       - name: Install dependencies
         run: |
