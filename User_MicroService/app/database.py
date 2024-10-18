@@ -1,8 +1,23 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from dotenv import load_dotenv
 
-URL_DATABASE = 'mysql+pymysql://user:VERY_SECURE_PASSWORD@localhost:3306/user_db'
+# Determine which environment file to load
+env = os.getenv('ENV', 'development')
+env_file = f'.env/{env}.env'
+
+# Load environment variables from file
+load_dotenv(env_file)
+
+# Retrieve credentials from environment variables
+db_user = os.getenv('DB_USER')
+db_password = os.getenv('DB_PASSWORD')
+db_host = os.getenv('DB_HOST')
+db_name = os.getenv('DB_NAME')
+db_port = os.getenv('DB_PORT')
+
+URL_DATABASE = f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 
 engine = create_engine(URL_DATABASE)
 

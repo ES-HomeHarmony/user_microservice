@@ -49,9 +49,13 @@ jobs:
       - name: Move to the correct directory
         run: cd ./User_MicroService/app
 
+      - name: Set Environment Variable
+        run: echo "ENV=development" >> $GITHUB_ENV
+
       - name: Run Tests
         env:
-          DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3307/test_user_db  # Update this based on how your code configures DB connections
+        #   DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3307/test_user_db  # Update this based on how your code configures DB connections
+            ENV: development
         run: |
           pytest --cov=./ --cov-report=xml  # Runs tests and generates coverage report in XML
 

@@ -3,5 +3,6 @@ uvicorn
 sqlalchemy
 pymysql
 cryptography
+python-dotenv
 pytest
 pytest-cov
