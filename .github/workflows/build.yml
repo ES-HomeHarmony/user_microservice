@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - main
-      - SCRUM-13-Save-users-to-DB
+      - dev
+      - SCRUM-*
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
