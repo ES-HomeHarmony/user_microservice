@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "Waiting for MySQL to be ready..."
           for i in {1..30}; do
-            mysqladmin ping -h 127.0.0.1 -P 3307 -u test_user --password=test_password && break
+            mysqladmin ping -h 127.0.0.1 -P 3306 -u user --password=VERY_SECURE_PASSWORD && break
             echo "MySQL not ready yet..."
             sleep 5
           done
