@@ -14,12 +14,12 @@ jobs:
       mysql_test:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: test_password
-          MYSQL_DATABASE: test_user_db
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
+          MYSQL_ROOT_PASSWORD: VERY_SECURE_PASSWORD
+          MYSQL_DATABASE: user_db
+          MYSQL_USER: user
+          MYSQL_PASSWORD: VERY_SECURE_PASSWORD
         ports:
-          - 3307:3306  # Expose different port for testing DB
+          - 3306:3306  # Expose different port for testing DB
 
     steps:
       - name: Checkout repository
