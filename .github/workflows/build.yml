@@ -51,8 +51,12 @@ jobs:
 
       - name: Run Tests
         env:
-            DATABASE_URL: mysql://test_user:test_password@127.0.0.1:3307/test_user_db  # Update this based on how your code configures DB connections
-            ENV: development
+          DB_USER: test_user
+          DB_PASSWORD: test_password
+          DB_HOST: 127.0.0.1
+          DB_NAME: test_db
+          DB_PORT: '3306'
+          ENV: development
         run: |
           pytest --cov=./ --cov-report=xml  # Runs tests and generates coverage report in XML
 

@@ -10,7 +10,12 @@ env_file = f'../.env/{env}.env'
 print(f'Loading environment file: {env_file}')
 
 # Load environment variables from file
-load_dotenv(env_file)
+if os.path.exists(env_file):
+    print(f'Loading environment: {env}')
+    print(f'Loading environment file: {env_file}')
+    load_dotenv(env_file)
+else:
+    print(f"Environment file {env_file} not found. Using system environment variables.")
 
 # Retrieve credentials from environment variables
 db_user = os.getenv('DB_USER')
