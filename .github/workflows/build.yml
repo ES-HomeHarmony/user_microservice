@@ -20,7 +20,6 @@ jobs:
           MYSQL_PASSWORD: test_password
         ports:
           - 3307:3306  # Expose different port for testing DB
-        options: --health-cmd='mysqladmin ping --silent' --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
       - name: Checkout repository
