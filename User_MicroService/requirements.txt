@@ -4,5 +4,7 @@ sqlalchemy
 pymysql
 cryptography
 python-dotenv
+python-jose
+requests
 pytest
 pytest-cov
