@@ -6,8 +6,7 @@ class UserBase(BaseModel):
     email: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Atualização para Pydantic V2
 
 class UserResponse(UserBase):
     id: int
-    role: str | None

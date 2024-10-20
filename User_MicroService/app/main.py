@@ -34,11 +34,20 @@
 
 
 from fastapi import FastAPI
-from app.database import engine
+from fastapi.middleware.cors import CORSMiddleware
+from app.database import engine, SessionLocal
 from app.models import Base
 from app.routes import user_routes
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Cria as tabelas no banco de dados
 Base.metadata.create_all(bind=engine)

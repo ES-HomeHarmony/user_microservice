@@ -1,18 +1,11 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app import models
-from app.schemas import UserBase, UserResponse
-from app.database import SessionLocal
+from app.schemas import UserResponse, UserBase
+from app.database import get_db
+import app.models as models
+from app.services.auth_service import get_current_user
 
 router = APIRouter()
-
-# Dependência para obter uma sessão do banco de dados
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserBase, db: Session = Depends(get_db)):
@@ -32,3 +25,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+@router.get("/users/me", response_model=UserResponse)
+async def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user

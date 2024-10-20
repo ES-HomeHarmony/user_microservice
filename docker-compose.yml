@@ -33,6 +33,9 @@ services:
       DB_HOST: mysql
       DB_NAME: user_db
       DB_PORT: 3306
+      AWS_REGION: eu-north-1
+      COGNITO_USERPOOL_ID: eu-north-1_BZVwENxbX
+      COGNITO_APP_CLIENT_ID: 1ks0163ckccdfje0a1h7h78ffl
     ports:
       - "8000:8000"
     depends_on:
