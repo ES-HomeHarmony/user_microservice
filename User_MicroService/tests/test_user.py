@@ -1,8 +1,8 @@
 # Now import the necessary modules
 import pytest
-from database import Base, engine
+from app.database import Base, engine
 from fastapi.testclient import TestClient
-from main import app
+from app.main import app
 
 client = TestClient(app)
 

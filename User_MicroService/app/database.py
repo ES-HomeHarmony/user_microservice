@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 # Determine which environment file to load
 env = os.getenv('ENV', 'development')
-env_file = f'../.env/{env}.env'
+env_file = f'.env/{env}.env'
 
 # Load environment variables from file
 if os.path.exists(env_file):
@@ -20,7 +20,10 @@ db_port = os.getenv('DB_PORT')
 
 URL_DATABASE = f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 
+print("AQUIIIIIIIIIIIIIIII1")
 print(f'URL_DATABASE: {URL_DATABASE}')
+print("AQUIIIIIIIIIIIIIIII2")
+
 
 engine = create_engine(URL_DATABASE)
 
