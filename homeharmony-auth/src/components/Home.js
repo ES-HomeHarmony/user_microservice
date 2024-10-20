@@ -60,14 +60,19 @@ function Home() {
       const code = getCodeFromURL();
       if (code) {
         const idToken = await exchangeCodeForToken(code);
+        
+        alert('Você foi cadastrado com sucesso!');
+        alert('Seu token de identificação é: ' + idToken);
+        
         if (idToken) {
           const userData = decodeJWT(idToken);
           const newUser = {
             cognito_id: userData.sub,
-            email: userData.email,
             name: userData.name,
+            email: userData.email,
           };
-          alert(userData);
+          console.log('Novo usuário', newUser);
+
           await createUserInDB(newUser);
         }
       }
