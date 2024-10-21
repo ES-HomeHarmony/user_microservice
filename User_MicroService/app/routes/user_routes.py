@@ -48,7 +48,8 @@ async def update_user_profile(
     current_user.email = profile_data.email
     current_user.role = profile_data.role
 
-    db.add(current_user)
+    # db.add(current_user)
+    current_user = db.merge(current_user)
     db.commit()
     db.refresh(current_user)
 
