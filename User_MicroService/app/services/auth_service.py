@@ -43,7 +43,7 @@ def exchange_code_for_tokens(code: str) -> dict:
 
     return response.json()
 
-def decode_jwt(token: str) -> dict:
+def decode_jwt(token: str, access_token: str) -> dict:
     keys = requests.get(COGNITO_KEYS_URL).json().get("keys", [])
 
     headers = jwt.get_unverified_headers(token)
@@ -61,7 +61,8 @@ def decode_jwt(token: str) -> dict:
             key,
             algorithms=["RS256"],
             audience=CLIENT_ID,
-            issuer=issuer
+            issuer=issuer,
+            access_token = access_token
         )
 
     except JWTError:
@@ -73,6 +74,7 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
     """
     Retrieve user from the database or create a new one based on Cognito ID.
     """
+    
     user = db.query(User).filter(User.cognito_id == user_info["sub"]).first()
     if not user:
         user = User(
@@ -101,7 +103,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
 
     try:
         # Decode the JWT token to retrieve the payload
-        payload = decode_jwt(access_token)
+        payload = decode_jwt(access_token, access_token)
         cognito_id = payload.get("sub")
         if cognito_id is None:
             raise HTTPException(

@@ -44,7 +44,8 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
         raise HTTPException(status_code=400, detail="ID or Access Token missing")
 
     # Decode the id_token, passing access_token for at_hash validation
-    user_info = auth_service.decode_jwt(access_token)
+    user_info = auth_service.decode_jwt(id_token, access_token)
+    print(user_info)
     user = auth_service.get_or_create_user(user_info, db)
 
     # Store access token in a secure, HTTP-only cookie

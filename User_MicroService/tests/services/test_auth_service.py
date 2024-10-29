@@ -42,7 +42,7 @@ def test_decode_jwt(mock_get):
     jwt.decode = Mock(return_value={"sub": "test_cognito_id"})
 
     token = "test_token"
-    payload = decode_jwt(token)
+    payload = decode_jwt(token, token)
 
     # Verify the payload
     assert "sub" in payload
