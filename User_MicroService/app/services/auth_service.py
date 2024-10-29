@@ -1,12 +1,11 @@
 import requests
 import os
-from jose import jwt, JWTError, jwk
+from jose import jwt, JWTError
 from fastapi import HTTPException, status, Depends, Request
 from sqlalchemy.orm import Session
 import base64
 from app.database import get_db
 from app.models.models import User
-import hashlib
 
 # Load environment variables
 CLIENT_ID = os.getenv("COGNITO_APP_CLIENT_ID")
@@ -20,17 +19,14 @@ def exchange_code_for_tokens(code: str) -> dict:
     """
     Exchange authorization code for tokens from Cognito.
     """
-    # If using a client secret, encode client ID and secret for Basic Auth
-    if CLIENT_SECRET:
-        client_auth = f"{CLIENT_ID}:{CLIENT_SECRET}"
-        encoded_auth = base64.b64encode(client_auth.encode()).decode()
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": f"Basic {encoded_auth}"
-        }
-    else:
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
+    client_auth = f"{CLIENT_ID}:{CLIENT_SECRET}"
+    encoded_auth = base64.b64encode(client_auth.encode()).decode()
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": f"Basic {encoded_auth}"
+    }
+    
     response = requests.post(
         TOKEN_URL,
         data={
@@ -47,8 +43,7 @@ def exchange_code_for_tokens(code: str) -> dict:
 
     return response.json()
 
-def decode_jwt(token: str, access_token: str) -> dict:
-
+def decode_jwt(token: str) -> dict:
     keys = requests.get(COGNITO_KEYS_URL).json().get("keys", [])
 
     headers = jwt.get_unverified_headers(token)
@@ -66,8 +61,7 @@ def decode_jwt(token: str, access_token: str) -> dict:
             key,
             algorithms=["RS256"],
             audience=CLIENT_ID,
-            issuer=issuer,
-            access_token=access_token
+            issuer=issuer
         )
 
     except JWTError:
@@ -96,17 +90,18 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     Extracts and verifies the JWT token from the cookie to retrieve the current user.
     """
     # Retrieve the access token from cookies
-    token = request.cookies.get("access_token")
-    if not token:
+    access_token = request.cookies.get("access_token")
+    
+    if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Access token missing",
+            detail="Access token missing from cookies",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     try:
         # Decode the JWT token to retrieve the payload
-        payload = decode_jwt(token)  # Reuse the decode_jwt function in auth_service
+        payload = decode_jwt(access_token)
         cognito_id = payload.get("sub")
         if cognito_id is None:
             raise HTTPException(
@@ -125,7 +120,13 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
             )
 
         return user
-    
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

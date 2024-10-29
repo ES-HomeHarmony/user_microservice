@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from app.database import Base
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class UpdateProfileSchema(BaseModel):
@@ -8,5 +8,4 @@ class UpdateProfileSchema(BaseModel):
     email: str
     role: str = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
