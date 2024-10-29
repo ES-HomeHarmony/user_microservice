@@ -42,7 +42,7 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
 
     # Decode the id_token, passing access_token for at_hash validation
     user_info = auth_service.decode_jwt(id_token, access_token)
-    # user = auth_service.get_or_create_user(user_info, db)
+    user = auth_service.get_or_create_user(user_info, db)
 
     # Store access token in a secure, HTTP-only cookie
     response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True)
