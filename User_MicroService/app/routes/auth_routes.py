@@ -53,11 +53,15 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
     response.set_cookie(key="access_token", value=access_token, httponly=False, max_age=3600, secure=True, samesite="strict")
     
     string = f"Bem Vindo: {user.name} - {user.email}"
-
+    response.message = string
     return response
 
 @router.get("/auth/logout")
 async def logout():
-    response = JSONResponse(content={"message": "User logged out successfully"})
+    cognito_logout_url = (
+        f"https://{COGNITO_DOMAIN}/logout?"
+        f"client_id={CLIENT_ID}&logout_uri=http://localhost:3000/"  # REDIRECT_URI deve estar registrado no Cognito
+    )
+    response = RedirectResponse(url=cognito_logout_url)
     response.delete_cookie(key="access_token")
     return response

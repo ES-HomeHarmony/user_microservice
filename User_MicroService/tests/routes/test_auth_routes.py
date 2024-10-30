@@ -28,14 +28,13 @@ def test_login_logout_flow(mock_decode_jwt, mock_exchange_code_for_tokens, clien
     
     # Test callback endpoint with mocked code
     code = "test_authorization_code"
-    callback_response = client.get(f"/callback?code={code}")
-    assert callback_response.status_code == status.HTTP_200_OK
+    callback_response = client.get(f"/callback?code={code}", follow_redirects=False)
+    assert callback_response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert callback_response.cookies.get("access_token") == "test_access_token"
 
     # Test logout functionality
-    logout_response = client.get("/auth/logout")
-    assert logout_response.status_code == status.HTTP_200_OK
-    assert logout_response.json() == {"message": "User logged out successfully"}
+    logout_response = client.get("/auth/logout", follow_redirects=False)
+    assert logout_response.status_code == status.HTTP_307_TEMPORARY_REDIRECT
     assert logout_response.cookies.get("access_token") is None
 
 def test_callback_missing_code(client):
