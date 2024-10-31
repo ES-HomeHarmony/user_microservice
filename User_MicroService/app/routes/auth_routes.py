@@ -50,7 +50,7 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
 
     # Store access token in a secure, HTTP-only cookie
     response = RedirectResponse(url="http://localhost:3000/")
-    response.set_cookie(key="access_token", value=access_token, httponly=False, max_age=3600, secure=True, samesite="strict")
+    response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=3600, secure=True, samesite="strict")
     
     string = f"Bem Vindo: {user.name} - {user.email}"
     response.message = string
