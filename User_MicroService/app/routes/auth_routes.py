@@ -49,12 +49,12 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
     user = auth_service.get_or_create_user(user_info, db)
 
     # Store access token in a secure, HTTP-only cookie
-    response = RedirectResponse(url="http://localhost:3000/")
-    response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=3600, secure=True, samesite="strict")
-    
+    redirect_response = RedirectResponse(url="http://localhost:3000/")
+    redirect_response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=3600, secure=True, samesite="strict")
+
     string = f"Bem Vindo: {user.name} - {user.email}"
-    response.message = string
-    return response
+    redirect_response.message = string
+    return redirect_response
 
 @router.get("/auth/logout")
 async def logout():
