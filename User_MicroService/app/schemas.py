@@ -1,12 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class UserBase(BaseModel):
     cognito_id: str
     name: str
     email: str
 
-    class Config:
-        from_attributes = True  # Atualização para Pydantic V2
+    model_config = ConfigDict(from_attributes=True)
 
 class UserResponse(UserBase):
     id: int
