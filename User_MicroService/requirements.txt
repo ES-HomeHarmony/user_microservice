@@ -11,3 +11,6 @@ pytest-cov
 pydantic
 coverage
 pytest-asyncio
+aiokafka
+kafka-python
+

@@ -10,3 +10,4 @@ class UserBase(BaseModel):
 class UserResponse(UserBase):
     id: int
     
+    
