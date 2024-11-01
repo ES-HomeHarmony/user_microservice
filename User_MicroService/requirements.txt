@@ -13,4 +13,5 @@ coverage
 pytest-asyncio
 aiokafka
 kafka-python
-
+aiomysql==0.0.22
+tortoise-orm==0.19.3

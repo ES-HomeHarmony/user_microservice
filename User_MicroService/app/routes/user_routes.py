@@ -11,15 +11,12 @@ import os
 
 router = APIRouter()
 
-#producer = KafkaProducer(
-#    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'),
-#    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-#)
-
+print("Attempting to connect to Kafka at:", os.getenv('KAFKA_BOOTSTRAP_SERVERS'))
 producer = KafkaProducer(
-    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'),
+    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
+print("Connected to Kafka")
 
 
 @router.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
