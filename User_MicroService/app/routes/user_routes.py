@@ -5,8 +5,19 @@ from app.database import get_db
 import app.models.models as models
 from app.models.updateUser import UpdateProfileSchema
 from app.services.auth_service import get_current_user
+from kafka import KafkaProducer
+import json
+import os
 
 router = APIRouter()
+
+print("Attempting to connect to Kafka at:", os.getenv('KAFKA_BOOTSTRAP_SERVERS'))
+producer = KafkaProducer(
+    bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS'),
+    value_serializer=lambda v: json.dumps(v).encode('utf-8')
+)
+print("Connected to Kafka")
+
 
 @router.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserBase, db: Session = Depends(get_db)):
@@ -18,6 +29,11 @@ async def create_user(user: UserBase, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    # Enviar mensagem para o Kafka
+    message = {"user_id": db_user.id, "email": db_user.email}
+    producer.send('user-topic', message)
+    
     return db_user
 
 @router.get("/user/profile", response_model=UserResponse, status_code=status.HTTP_200_OK)
@@ -48,4 +64,20 @@ async def update_user_profile(
 
     return current_user  # Return the updated user profile
 
+
+@router.get("/auth/login", response_model=UserResponse)
+async def login_user(user: UserBase, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Enviar dados do usuário para o Kafka
+    message = {
+        "cognito_id": db_user.cognito_id,
+        "name": db_user.name,
+        "email": db_user.email,
+        "role": db_user.role
+    }
+    producer.send('user_topic', message)  # Envia os dados para o tópico 'user_topic'
+    return db_user
 
