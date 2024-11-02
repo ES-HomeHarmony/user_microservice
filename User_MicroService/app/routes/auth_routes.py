@@ -24,7 +24,7 @@ async def login_redirect():
         "redirect_uri": REDIRECT_URI
     }
     cognito_url = f"https://{COGNITO_DOMAIN}/oauth2/authorize?{urlencode(query_params)}"
-
+  
     return RedirectResponse(url=cognito_url)
 
 
@@ -45,12 +45,12 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
 
     # Decode the id_token, passing access_token for at_hash validation
     user_info = auth_service.decode_jwt(id_token, access_token)
-    print(user_info)
+ 
     user = auth_service.get_or_create_user(user_info, db)
 
     # Store access token in a secure, HTTP-only cookie
     redirect_response = RedirectResponse(url="http://localhost:3000/")
-    redirect_response.set_cookie(key="access_token", value=access_token, httponly=True, max_age=3600, secure=True, samesite="strict")
+    redirect_response.set_cookie(key="access_token", value=access_token, httponly=False, max_age=3600, secure=True, samesite="strict")
 
     string = f"Bem Vindo: {user.name} - {user.email}"
     redirect_response.message = string
