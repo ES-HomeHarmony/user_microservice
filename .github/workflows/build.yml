@@ -4,7 +4,6 @@ on:
     branches:
       - main
       - dev
-      - SCRUM-*
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
@@ -28,11 +27,22 @@ jobs:
         with:
           fetch-depth: 0  # Ensures complete history for better analysis
 
+      - name: Install Docker Compose
+        run: sudo apt-get install -y docker-compose  # Ensure docker-compose is available
+  
+      - name: Set up Docker Compose
+        run: docker-compose -f docker-compose-kafka-tests.yml up -d
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Use your project's Python version
+          python-version: '3.11'  # Use your project's Python version
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./User_MicroService/requirements.txt
+      
       - name: Wait for MySQL to be Ready
         run: |
           echo "Waiting for MySQL to be ready..."
@@ -41,11 +51,11 @@ jobs:
             echo "MySQL not ready yet..."
             sleep 5
           done
-
-      - name: Install dependencies
+          
+      - name: Debug Kafka Connection
         run: |
-          python -m pip install --upgrade pip
-          pip install -r ./User_MicroService/requirements.txt
+          echo "Testing Kafka connection..."
+          nc -zv localhost 9092 || echo "Connection to Kafka failed"
 
       - name: Move to the correct directory
         run: cd ./User_MicroService/app
