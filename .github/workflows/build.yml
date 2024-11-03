@@ -67,6 +67,7 @@ jobs:
           DB_HOST: localhost
           DB_NAME: user_db
           DB_PORT: 3306
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
           ENV: development
         run: |
           pytest --cov=./ --cov-report=xml  # Runs tests and generates coverage report in XML
