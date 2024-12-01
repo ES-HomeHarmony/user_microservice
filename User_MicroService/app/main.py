@@ -127,7 +127,11 @@ def handle_tenant_data():
             for tenant_id in tenants_ids:
                 tenant = db.query(User).filter(User.cognito_id == tenant_id).first()
                 print(f"Tenant: {tenant}")
-                tenant_data[tenant_id] = tenant.name
+                tenant_data2 = []
+                tenant_data2.append(tenant.name)
+                tenant_data2.append(tenant.email)
+
+                tenant_data[tenant_id] = tenant_data2
             db.close()
 
             producer.send('tenant_info_response', tenant_data)
