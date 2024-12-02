@@ -1,0 +1,11 @@
+# Environment Files
+.env/
+
+# Python
+__pycache__/
+
+htmlcov/
+
+.coverage
+
+test_tasks.db

@@ -1,0 +1,17 @@
+fastapi[standard]
+uvicorn
+sqlalchemy
+pymysql
+cryptography
+python-dotenv
+python-jose
+requests
+pytest
+pytest-cov
+pydantic
+coverage
+pytest-asyncio
+aiokafka
+kafka-python
+aiomysql==0.0.22
+tortoise-orm==0.19.3
