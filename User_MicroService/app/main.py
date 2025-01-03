@@ -86,29 +86,44 @@ def handle_user_creation():
         if request_data.get("action") == "create_user":
             user_data = request_data.get("user_data")
             print(f"Creating user: {user_data}")
-            
-            new_cognito_id = str(uuid.uuid4())
 
-            db_user = User(
-                cognito_id = new_cognito_id, # Replace with actual ID from user creation logic
-                name=user_data["name"],
-                email=user_data["email"],
-            )
-
+            #se o user já estiver cirado devolve o cognitoid
             db = SessionLocal()
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
-            db.close()
-            
-            try:
-                cognito_id = db_user.cognito_id 
+            user = db.query(User).filter(User.email == user_data["email"]).first()
 
-                print(f"User created with cognito_id: {cognito_id}")
-                # Send confirmation response back to Kafka
-                producer.send('user-creation-response', {"cognito_id": cognito_id})
-            except Exception as e:
-                print(f"Error creating user: {e}")
+            if user:
+                print(f"User already exists with cognito_id: {user.cognito_id}")
+                #change the user role to tenant
+                user.role = "tenant"
+                db.commit()
+                db.refresh(user)
+                producer.send('user-creation-response', {"cognito_id": user.cognito_id})
+                db.close()
+            else:
+
+                new_cognito_id = str(uuid.uuid4())
+
+                db_user = User(
+                    cognito_id = new_cognito_id, # Replace with actual ID from user creation logic
+                    name=user_data["name"],
+                    email=user_data["email"],
+                    role="tenant"
+                )
+
+                db = SessionLocal()
+                db.add(db_user)
+                db.commit()
+                db.refresh(db_user)
+                db.close()
+
+                try:
+                    cognito_id = db_user.cognito_id 
+
+                    print(f"User created with cognito_id: {cognito_id}")
+                    # Send confirmation response back to Kafka
+                    producer.send('user-creation-response', {"cognito_id": cognito_id})
+                except Exception as e:
+                    print(f"Error creating user: {e}")
 
 def handle_tenant_data():
     for message in tenant_consumer:
