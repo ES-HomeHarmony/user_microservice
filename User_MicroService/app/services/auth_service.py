@@ -78,7 +78,6 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
     from app.main import producer
     
     user = db.query(User).filter(User.email == user_info["email"]).first()
-    print("user:", user.email, user.cognito_id)
     if not user:
         user = User(
             cognito_id=user_info["sub"],
