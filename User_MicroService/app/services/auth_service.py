@@ -74,8 +74,11 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
     """
     Retrieve user from the database or create a new one based on Cognito ID.
     """
+
+    from app.main import producer
     
-    user = db.query(User).filter(User.cognito_id == user_info["sub"]).first()
+    user = db.query(User).filter(User.email == user_info["email"]).first()
+    print("user:", user.email, user.cognito_id)
     if not user:
         user = User(
             cognito_id=user_info["sub"],
@@ -85,6 +88,22 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
         db.add(user)
         db.commit()
         db.refresh(user)
+    else: 
+        if user.role == "tenant":
+            print("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+            old_id = user.cognito_id
+            print("old_id", old_id)
+            user.cognito_id = user_info["sub"]
+            db.commit()
+            db.refresh(user)
+
+            message = {
+                "old_id": old_id,
+                "new_id": user.cognito_id
+            }
+
+            producer.send('user-id-update', message)
+
     return user
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
