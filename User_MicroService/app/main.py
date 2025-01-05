@@ -151,7 +151,6 @@ def handle_tenant_data():
 
             producer.send('tenant_info_response', tenant_data)
 
-
 # Start Kafka consumer in a background thread when the FastAPI app starts
 @app.on_event("startup")
 def startup_event():
