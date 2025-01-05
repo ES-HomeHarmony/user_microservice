@@ -131,3 +131,93 @@ def test_get_current_user_no_cognito_id(mock_get_current_user, client):
     # Verify that the response indicates access token missing
     assert response.status_code == 401
     assert response.json()["detail"] == "Access token missing from cookies"
+
+
+@patch("app.main.producer.send")
+def test_get_or_create_user_creates_new_user(mock_producer, db_session):
+    """
+    Test that a new user is created when they do not exist in the database.
+    """
+    user_info = {
+        "sub": "new_cognito_id",
+        "email": "newuser@example.com",
+        "given_name": "New User"
+    }
+
+    user = get_or_create_user(user_info, db_session)
+
+    # Verify the new user is created
+    assert user.cognito_id == "new_cognito_id"
+    assert user.email == "newuser@example.com"
+    assert user.name == "New User"
+
+    # Ensure no Kafka messages are sent
+    mock_producer.assert_not_called()
+
+@patch("app.main.producer.send")
+def test_get_or_create_user_existing_user_no_update(mock_producer, db_session):
+    """
+    Test that an existing user with a non-tenant role is not updated.
+    """
+    # Prepopulate a user with role "landlord"
+    user = User(
+        cognito_id="existing_cognito_id",
+        email="testuser@example.com",
+        name="Test User",
+        role="landlord"
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    user_info = {
+        "sub": "new_cognito_id",
+        "email": "testuser@example.com",
+        "given_name": "Updated User"
+    }
+
+    result = get_or_create_user(user_info, db_session)
+
+    # Verify the user is not updated
+    assert result.cognito_id == "existing_cognito_id"
+    assert result.email == "testuser@example.com"
+    assert result.name == "Test User"
+
+    # Ensure no Kafka messages are sent
+    mock_producer.assert_not_called()
+
+@patch("app.main.producer.send")
+def test_get_or_create_user_tenant_role_updates_cognito_id(mock_producer, db_session):
+    """
+    Test that an existing tenant user's cognito_id is updated and a Kafka message is sent.
+    """
+    # Prepopulate a tenant user
+    user = User(
+        cognito_id="old_cognito_id",
+        email="tenant@example.com",
+        name="Tenant User",
+        role="tenant"
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    user_info = {
+        "sub": "new_cognito_id",
+        "email": "tenant@example.com",
+        "given_name": "Updated Tenant User"
+    }
+
+    result = get_or_create_user(user_info, db_session)
+
+    # Verify the cognito_id is updated
+    assert result.cognito_id == "new_cognito_id"
+    assert result.email == "tenant@example.com"
+    assert result.name == "Tenant User"
+
+    # Verify Kafka message is sent
+    mock_producer.assert_called_once_with(
+        'user-id-update',
+        {
+            "old_id": "old_cognito_id",
+            "new_id": "new_cognito_id"
+        }
+    )
