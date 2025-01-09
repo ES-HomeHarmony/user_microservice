@@ -46,7 +46,6 @@ def exchange_code_for_tokens(code: str) -> dict:
     logger.info(f"Token exchange response: {response.json()}")
 
     if response.status_code != 200:
-        logger.error(f"Token exchange failed: {response.json()}")
         raise HTTPException(status_code=response.status_code, detail="Token exchange failed")
 
     return response.json()
@@ -97,6 +96,7 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
         db.add(user)
         db.commit()
         db.refresh(user)
+        logger.info(f"User created: {user}")
     else: 
         if user.role == "tenant":
             old_id = user.cognito_id

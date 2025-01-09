@@ -5,7 +5,10 @@ from app.database import get_db
 import app.models.models as models
 from app.models.updateUser import UpdateProfileSchema
 from app.services.auth_service import get_current_user
+import logging
 router = APIRouter()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("user_service_user_routes")
 
 @router.post("/users/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserBase, db: Session = Depends(get_db)):
@@ -17,7 +20,7 @@ async def create_user(user: UserBase, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-
+    logger.info(f"User created: {db_user}")
     return db_user
 
 @router.get("/user/profile", response_model=UserResponse, status_code=status.HTTP_200_OK)
@@ -25,6 +28,7 @@ async def get_user_profile(current_user: models.User = Depends(get_current_user)
     """
     Fetch the current authenticated user's profile using their Cognito ID.
     """
+    logger.info(f"Current user: {current_user}")
     return current_user  # Return the user profile directly from the DB (as fetched by get_current_user)
 
 @router.put("/user/profile/update", response_model=UserResponse)
@@ -46,4 +50,5 @@ async def update_user_profile(
     db.commit()
     db.refresh(current_user)
 
+    logger.info(f"User profile updated: {current_user}")
     return current_user  # Return the updated user profile

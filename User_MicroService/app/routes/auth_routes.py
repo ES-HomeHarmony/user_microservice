@@ -7,8 +7,12 @@ from app.database import get_db
 from app.services import auth_service  # Import the service here
 import requests
 import os
+import logging
 
 router = APIRouter()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("user_service_auth_routes")
 
 COGNITO_DOMAIN = os.getenv("COGNITO_DOMAIN")
 CLIENT_ID = os.getenv("COGNITO_APP_CLIENT_ID")
@@ -24,7 +28,7 @@ async def login_redirect():
         "redirect_uri": REDIRECT_URI
     }
     cognito_url = f"https://{COGNITO_DOMAIN}/oauth2/authorize?{urlencode(query_params)}"
-  
+
     return RedirectResponse(url=cognito_url)
 
 
@@ -54,6 +58,7 @@ async def callback(request: Request, response: Response, db: Session = Depends(g
 
     string = f"Bem Vindo: {user.name} - {user.email}"
     redirect_response.message = string
+    logger.info(f"User logged in: {user}")
     return redirect_response
 
 @router.get("/auth/logout")
@@ -64,4 +69,5 @@ async def logout():
     )
     response = RedirectResponse(url=cognito_logout_url)
     response.delete_cookie(key="access_token")
+    logger.info(f"User logged out")
     return response
