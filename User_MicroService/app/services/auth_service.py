@@ -6,6 +6,11 @@ from sqlalchemy.orm import Session
 import base64
 from app.database import get_db
 from app.models.models import User
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("user_service_auth_service")
 
 # Load environment variables
 CLIENT_ID = os.getenv("COGNITO_APP_CLIENT_ID")
@@ -38,7 +43,10 @@ def exchange_code_for_tokens(code: str) -> dict:
         headers=headers
     )
 
+    logger.info(f"Token exchange response: {response.json()}")
+
     if response.status_code != 200:
+        logger.error(f"Token exchange failed: {response.json()}")
         raise HTTPException(status_code=response.status_code, detail="Token exchange failed")
 
     return response.json()
@@ -67,6 +75,8 @@ def decode_jwt(token: str, access_token: str) -> dict:
 
     except JWTError:
         raise HTTPException(status_code=401, detail="Token is invalid")
+    
+    logger.info(f"Token payload: {payload}")
 
     return payload
 
@@ -89,9 +99,7 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
         db.refresh(user)
     else: 
         if user.role == "tenant":
-            print("HEREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
             old_id = user.cognito_id
-            print("old_id", old_id)
             user.cognito_id = user_info["sub"]
             db.commit()
             db.refresh(user)
@@ -102,6 +110,7 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
             }
 
             producer.send('user-id-update', message)
+            logger.info(f"User ID updated: {message}")
 
     return user
 
@@ -111,6 +120,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     """
     # Retrieve the access token from cookies
     access_token = request.cookies.get("access_token")
+    logger.info(f"Access token: {access_token}")
     
     if not access_token:
         raise HTTPException(
@@ -139,7 +149,9 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        logger.info(f"Current user: {user}")
         return user
+    
 
     except ValueError as e:
         raise HTTPException(
