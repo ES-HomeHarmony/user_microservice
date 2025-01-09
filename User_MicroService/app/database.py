@@ -2,6 +2,11 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("user_service_db")
 
 # Determine which environment file to load
 env = os.getenv('ENV', 'development')
@@ -20,10 +25,7 @@ db_port = os.getenv('DB_PORT')
 
 URL_DATABASE = f'mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'
 
-print("AQUIIIIIIIIIIIIIIII1")
-print(f'URL_DATABASE: {URL_DATABASE}')
-print("AQUIIIIIIIIIIIIIIII2")
-
+logger.info(f"Database URL CONNECTED")
 
 engine = create_engine(URL_DATABASE)
 

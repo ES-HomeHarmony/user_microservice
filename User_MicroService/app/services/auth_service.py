@@ -6,6 +6,11 @@ from sqlalchemy.orm import Session
 import base64
 from app.database import get_db
 from app.models.models import User
+import logging
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("user_service_auth_service")
 
 # Load environment variables
 CLIENT_ID = os.getenv("COGNITO_APP_CLIENT_ID")
@@ -38,6 +43,8 @@ def exchange_code_for_tokens(code: str) -> dict:
         headers=headers
     )
 
+    logger.info(f"Token exchange response: {response.json()}")
+
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail="Token exchange failed")
 
@@ -67,6 +74,8 @@ def decode_jwt(token: str, access_token: str) -> dict:
 
     except JWTError:
         raise HTTPException(status_code=401, detail="Token is invalid")
+    
+    logger.info(f"Token payload: {payload}")
 
     return payload
 
@@ -74,8 +83,10 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
     """
     Retrieve user from the database or create a new one based on Cognito ID.
     """
+
+    from app.main import producer
     
-    user = db.query(User).filter(User.cognito_id == user_info["sub"]).first()
+    user = db.query(User).filter(User.email == user_info["email"]).first()
     if not user:
         user = User(
             cognito_id=user_info["sub"],
@@ -85,6 +96,22 @@ def get_or_create_user(user_info: dict, db: Session) -> User:
         db.add(user)
         db.commit()
         db.refresh(user)
+        logger.info(f"User created: {user}")
+    else: 
+        if user.role == "tenant":
+            old_id = user.cognito_id
+            user.cognito_id = user_info["sub"]
+            db.commit()
+            db.refresh(user)
+
+            message = {
+                "old_id": old_id,
+                "new_id": user.cognito_id
+            }
+
+            producer.send('user-id-update', message)
+            logger.info(f"User ID updated: {message}")
+
     return user
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
@@ -93,6 +120,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     """
     # Retrieve the access token from cookies
     access_token = request.cookies.get("access_token")
+    logger.info(f"Access token: {access_token}")
     
     if not access_token:
         raise HTTPException(
@@ -121,7 +149,9 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        logger.info(f"Current user: {user}")
         return user
+    
 
     except ValueError as e:
         raise HTTPException(

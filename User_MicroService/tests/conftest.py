@@ -30,8 +30,16 @@ def client():
 
 @pytest.fixture(scope="function")
 def db_session():
-    # Return a fresh session for tests requiring direct DB access
+    # Ensure tables are created
+    Base.metadata.create_all(bind=engine)
+
+    # Create a fresh session
     session = TestingSessionLocal()
-    yield session
-    session.rollback()
-    session.close()
+    try:
+        yield session
+    finally:
+        session.rollback()
+        session.close()
+
+    # Clean up tables after tests
+    Base.metadata.drop_all(bind=engine)
