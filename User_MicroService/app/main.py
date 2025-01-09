@@ -9,8 +9,11 @@ import threading
 import json
 import os
 import uuid
+import logging
 
 app = FastAPI()
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("user_service")
 
 app.add_middleware(
     CORSMiddleware,
@@ -59,7 +62,7 @@ producer = KafkaProducer(
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 
-print("Connected to Kafka")
+logger.info("Connected to Kafka")
 
 def process_validation_request():
     try:
@@ -78,21 +81,21 @@ def process_validation_request():
                 producer.send('user-validation-response', validated_user)
                 
     except Exception as e:
-        print(f"Error in Kafka consumer loop: {e}")
+        logger.info(f"Error in Kafka consumer loop: {e}")
 
 def handle_user_creation():
     for message in user_creation_consumer:
         request_data = message.value
         if request_data.get("action") == "create_user":
             user_data = request_data.get("user_data")
-            print(f"Creating user: {user_data}")
+            logger.info(f"Creating user: {user_data}")
 
             #se o user já estiver cirado devolve o cognitoid
             db = SessionLocal()
             user = db.query(User).filter(User.email == user_data["email"]).first()
 
             if user:
-                print(f"User already exists with cognito_id: {user.cognito_id}")
+                logger.info(f"User already exists with cognito_id: {user.cognito_id}")
                 #change the user role to tenant
                 user.role = "tenant"
                 db.commit()
@@ -119,17 +122,17 @@ def handle_user_creation():
                 try:
                     cognito_id = db_user.cognito_id 
 
-                    print(f"User created with cognito_id: {cognito_id}")
+                    logger.info(f"User created with cognito_id: {cognito_id}")
                     # Send confirmation response back to Kafka
                     producer.send('user-creation-response', {"cognito_id": cognito_id})
                 except Exception as e:
-                    print(f"Error creating user: {e}")
+                    logger.info(f"Error creating user: {e}")
 
 def handle_tenant_data():
     for message in tenant_consumer:
         request_data = message.value
 
-        print(f"Received tenant data request: {request_data}")
+        logger.info(f"Received tenant data request: {request_data}")
 
         if request_data.get("action") == "get_tenants_data":
             
@@ -141,7 +144,7 @@ def handle_tenant_data():
             db = SessionLocal()
             for tenant_id in tenants_ids:
                 tenant = db.query(User).filter(User.cognito_id == tenant_id).first()
-                print(f"Tenant: {tenant}")
+                logger.info(f"Tenant: {tenant}")
                 tenant_data2 = []
                 tenant_data2.append(tenant.name)
                 tenant_data2.append(tenant.email)
@@ -158,16 +161,16 @@ def startup_event():
         # Start thread for process_validation_request
         validation_thread = threading.Thread(target=process_validation_request, daemon=True)
         validation_thread.start()
-        print("Kafka validation consumer thread started")
+        logger.info("Kafka validation consumer thread started")
 
         # Start thread for user creation processing
         user_creation_thread = threading.Thread(target=handle_user_creation, daemon=True)
         user_creation_thread.start()
-        print("Kafka user creation consumer thread started")
+        logger.info("Kafka user creation consumer thread started")
 
         tenant_consumer_thread = threading.Thread(target=handle_tenant_data, daemon=True)
         tenant_consumer_thread.start()
-        print("Kafka tenant data consumer thread started")
+        logger.info("Kafka tenant data consumer thread started")
         
     except Exception as e:
-        print(f"Error starting Kafka consumer threads: {e}")
+        logger.info(f"Error starting Kafka consumer threads: {e}")
